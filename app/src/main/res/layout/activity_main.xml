@@ -7,20 +7,12 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Activate Garage Door"
-        android:id="@+id/button"
-        android:layout_gravity="center_horizontal"
-        android:textSize="60dp"
-        android:visibility="gone" />
-
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/lockedLayout">
+        android:id="@+id/lockedLayout"
+        android:layout_marginBottom="20dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -35,5 +27,16 @@
             android:layout_height="wrap_content"
             android:id="@+id/seekBar" />
     </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Garage Door"
+        android:id="@+id/button"
+        android:layout_gravity="center_horizontal"
+        android:textSize="60dp"
+        android:visibility="visible"
+        android:enabled="false"
+        android:background="@drawable/red_btn" />
 
 </LinearLayout>

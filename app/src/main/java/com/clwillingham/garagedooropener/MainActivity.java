@@ -27,6 +27,21 @@ public class MainActivity extends Activity {
     LinearLayout lockedLayout;
     SeekBar seekBar;
     Timer timer = new Timer();
+    void armButton(final boolean isArmed){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(isArmed){
+                    button.setEnabled(true);
+                    seekBar.setEnabled(false);
+                }else{
+                    button.setEnabled(false);
+                    seekBar.setEnabled(true);
+                    seekBar.setProgress(0);
+                }
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,23 +57,17 @@ public class MainActivity extends Activity {
                 public void onStopTrackingTouch(SeekBar seekBar) {
 
                     if (seekBar.getProgress() > 95) {
-                        lockedLayout.setVisibility(View.GONE);
-                        button.setVisibility(View.VISIBLE);
+                        armButton(true);
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        lockedLayout.setVisibility(View.VISIBLE);
-                                        button.setVisibility(View.GONE);
-                                    }
-                                });
+                                armButton(false);
                                 this.cancel();
                             }
-                        }, 10000);
+                        }, 5000);
+                    }else{
+                        seekBar.setProgress(0);
                     }
-                    seekBar.setProgress(0);
                 }
 
                 @Override
@@ -85,6 +94,7 @@ public class MainActivity extends Activity {
                             try {
                                 String msg = "garage door_activate\n";
                                 MainApplication.socket.send(new DatagramPacket(msg.getBytes(), msg.length(), new InetSocketAddress("255.255.255.255", 6200)));
+                                armButton(false);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
