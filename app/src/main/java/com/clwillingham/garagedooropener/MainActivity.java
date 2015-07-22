@@ -1,23 +1,32 @@
 package com.clwillingham.garagedooropener;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 public class MainActivity extends Activity {
 
     Button button;
+    LinearLayout lockedLayout;
+    SeekBar seekBar;
+    Timer timer = new Timer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +34,48 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         if(button == null){
             button = (Button)findViewById(R.id.button);
+            seekBar = (SeekBar)findViewById(R.id.seekBar);
+            lockedLayout = (LinearLayout)findViewById(R.id.lockedLayout);
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    if (seekBar.getProgress() > 95) {
+                        lockedLayout.setVisibility(View.GONE);
+                        button.setVisibility(View.VISIBLE);
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lockedLayout.setVisibility(View.VISIBLE);
+                                        button.setVisibility(View.GONE);
+                                    }
+                                });
+                                this.cancel();
+                            }
+                        }, 10000);
+                    }
+                    seekBar.setProgress(0);
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+
+                }
+
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress,
+                                              boolean fromUser) {
+                    if(progress>95){
+                        //seekBar.setThumb(getResources().getDrawable(R.drawable.load_img1));
+                    }
+
+                }
+            });
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -32,7 +83,7 @@ public class MainActivity extends Activity {
                         @Override
                         public void run() {
                             try {
-                                String msg = "activate_door\n";
+                                String msg = "garage door_activate\n";
                                 MainApplication.socket.send(new DatagramPacket(msg.getBytes(), msg.length(), new InetSocketAddress("255.255.255.255", 6200)));
                             } catch (IOException e) {
                                 e.printStackTrace();

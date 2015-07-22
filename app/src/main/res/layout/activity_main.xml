@@ -13,5 +13,27 @@
         android:text="Activate Garage Door"
         android:id="@+id/button"
         android:layout_gravity="center_horizontal"
-        android:textSize="60dp" />
+        android:textSize="60dp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/lockedLayout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Slide to Unlock"
+            android:id="@+id/textView"
+            android:layout_gravity="center_horizontal" />
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBar" />
+    </LinearLayout>
+
 </LinearLayout>
