@@ -1,8 +1,13 @@
 apply plugin: 'com.android.application'
+apply plugin: 'testfairy'
 
 android {
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
+
+    testfairyConfig {
+        apiKey "$System.env.TESTFAIRY_KEY"
+    }
 
     defaultConfig {
         applicationId "com.clwillingham.garagedooropener"
@@ -19,7 +24,9 @@ android {
     }
 }
 
+
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:22.1.0'
+    compile 'com.android.support:appcompat-v7:22.2.1'
 }

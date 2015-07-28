@@ -25,5 +25,6 @@ public class MainApplication extends Application {
     @Override
     public void onTerminate(){
         socket.close();
+        super.onTerminate();
     }
 }
