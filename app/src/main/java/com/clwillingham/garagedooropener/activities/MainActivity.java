@@ -1,7 +1,11 @@
-package com.clwillingham.garagedooropener;
+package com.clwillingham.garagedooropener.activities;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,22 +13,20 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetSocketAddress;
-import java.net.SocketException;
+import com.clwillingham.garagedooropener.MainApplication;
+import com.clwillingham.garagedooropener.R;
+import com.clwillingham.particle_api.models.FunctionResponse;
+
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ThreadPoolExecutor;
 
 
-public class MainActivity extends Activity {
-
+public class MainActivity extends BaseActivity {
     Button button;
     LinearLayout lockedLayout;
     SeekBar seekBar;
     Timer timer = new Timer();
+    TimerTask lockdownTask;
     void armButton(final boolean isArmed){
         runOnUiThread(new Runnable() {
             @Override
@@ -41,10 +43,18 @@ public class MainActivity extends Activity {
         });
     }
 
+    void cancelLockdown(){
+        if(lockdownTask != null){
+            lockdownTask.cancel();
+            lockdownTask = null;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        final WifiManager wifiManager = (WifiManager) getSystemService (Context.WIFI_SERVICE);
         if(button == null){
             button = (Button)findViewById(R.id.button);
             seekBar = (SeekBar)findViewById(R.id.seekBar);
@@ -54,16 +64,20 @@ public class MainActivity extends Activity {
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
 
-                    if (seekBar.getProgress() > 95) {
+                    if (seekBar.getProgress() > 95 && wifiManager.isWifiEnabled() && wifiManager.getConnectionInfo().getSSID().equals("4QGH4")) {
                         armButton(true);
-                        timer.schedule(new TimerTask() {
+                        cancelLockdown();
+                        lockdownTask = new TimerTask() {
                             @Override
                             public void run() {
                                 armButton(false);
                                 this.cancel();
                             }
-                        }, 5000);
-                    }else{
+                        };
+
+                        timer.schedule(lockdownTask, 5000);
+
+                    } else {
                         seekBar.setProgress(0);
                     }
                 }
@@ -77,7 +91,7 @@ public class MainActivity extends Activity {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress,
                                               boolean fromUser) {
-                    if(progress>95){
+                    if (progress > 95) {
                         //seekBar.setThumb(getResources().getDrawable(R.drawable.load_img1));
                     }
 
@@ -89,13 +103,16 @@ public class MainActivity extends Activity {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            try {
-                                String msg = "garage door_activate\n";
-                                MainApplication.socket.send(new DatagramPacket(msg.getBytes(), msg.length(), new InetSocketAddress("255.255.255.255", 6200)));
-                                armButton(false);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            //String msg = "garage door_activate\n";
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    button.setEnabled(false);
+                                }
+                            });
+                            FunctionResponse response = getApp().particle.callFunction("53ff68066667574852302067", "activateDoor");
+                            armButton(false);
+                            cancelLockdown();
                         }
                     }).start();
 
@@ -103,6 +120,10 @@ public class MainActivity extends Activity {
             });
         }
 
+    }
+
+    public MainApplication getApp(){
+        return (MainApplication) getApplication();
     }
 
 
@@ -122,6 +143,8 @@ public class MainActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
