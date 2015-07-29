@@ -1,11 +1,10 @@
 package com.clwillingham.garagedooropener.activities;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,7 +20,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     Button button;
     LinearLayout lockedLayout;
     SeekBar seekBar;
@@ -55,71 +54,86 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final WifiManager wifiManager = (WifiManager) getSystemService (Context.WIFI_SERVICE);
-        if(button == null){
-            button = (Button)findViewById(R.id.button);
-            seekBar = (SeekBar)findViewById(R.id.seekBar);
-            lockedLayout = (LinearLayout)findViewById(R.id.lockedLayout);
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-
-                    if (seekBar.getProgress() > 95 && wifiManager.isWifiEnabled() && wifiManager.getConnectionInfo().getSSID().equals("4QGH4")) {
-                        armButton(true);
-                        cancelLockdown();
-                        lockdownTask = new TimerTask() {
-                            @Override
-                            public void run() {
-                                armButton(false);
-                                this.cancel();
-                            }
-                        };
-
-                        timer.schedule(lockdownTask, 5000);
-
-                    } else {
-                        seekBar.setProgress(0);
-                    }
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
+        button = (Button)findViewById(R.id.button);
+        seekBar = (SeekBar)findViewById(R.id.seekBar);
+        lockedLayout = (LinearLayout)findViewById(R.id.lockedLayout);
 
 
-                }
 
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress,
-                                              boolean fromUser) {
-                    if (progress > 95) {
-                        //seekBar.setThumb(getResources().getDrawable(R.drawable.load_img1));
-                    }
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
-                }
-            });
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    new Thread(new Runnable() {
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+                if (seekBar.getProgress() > 95) {
+                    armButton(true);
+                    cancelLockdown();
+                    lockdownTask = new TimerTask() {
                         @Override
                         public void run() {
-                            //String msg = "garage door_activate\n";
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    button.setEnabled(false);
-                                }
-                            });
-                            FunctionResponse response = getApp().particle.callFunction("53ff68066667574852302067", "activateDoor");
                             armButton(false);
-                            cancelLockdown();
+                            this.cancel();
                         }
-                    }).start();
+                    };
+                    long timeout = MainActivity.this.getPrefs().getInt("lockout_timeout", 5)*1000;
+                    Log.d("MainActivity", "Timeout is set to " + timeout);
+                    timer.schedule(lockdownTask, timeout);
 
+                } else {
+                    seekBar.setProgress(0);
                 }
-            });
-        }
+            }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                if (progress > 95) {
+                    //seekBar.setThumb(getResources().getDrawable(R.drawable.load_img1));
+                }
+
+            }
+        });
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //String msg = "garage door_activate\n";
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                button.setEnabled(false);
+                            }
+                        });
+                        FunctionResponse response = getApp().particle.callFunction("53ff68066667574852302067", "activateDoor");
+                        armButton(false);
+                        cancelLockdown();
+                    }
+                }).start();
+
+            }
+        });
+        if(!getAPI().hasValidAccessToken()){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("MainActivity", "onResume");
+        if(!getAPI().hasValidAccessToken()){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        }
     }
 
     public MainApplication getApp(){

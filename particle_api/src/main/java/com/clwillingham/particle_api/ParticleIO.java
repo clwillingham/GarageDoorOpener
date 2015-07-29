@@ -59,8 +59,19 @@ public class ParticleIO{
         this("https://api.particle.io", accessToken);
     }
 
+    public ParticleIO(){
+        this(null);
+    }
+
     public void setAccessToken(String accessToken){
         this.accessToken = accessToken;
+    }
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public boolean hasValidAccessToken(){
+        return getAccessToken() == null || getAccessToken().length() == 40;
     }
 
     public ArrayList<ParticleDevice> getDevices(){

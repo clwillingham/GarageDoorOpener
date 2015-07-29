@@ -3,6 +3,7 @@ package com.clwillingham.garagedooropener.activities;
 import android.content.Intent;
 import android.media.Image;
 import android.net.Uri;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -68,6 +69,16 @@ public class SettingsActivity extends BaseActivity {
         lockoutTimeoutEdTxt.setText(""+getPrefs().getInt("lockout_timeout", 5));
     }
 
+    @OnClick(R.id.saveBtn)
+    public void saveSettings(){
+        String accessToken = accessTokenEdTxt.getText().toString();
+        getPrefs().edit()
+                .putString("access_token", accessToken)
+                .putInt("lockout_timeout", Integer.parseInt(lockoutTimeoutEdTxt.getText().toString()))
+                .commit();
+        getAPI().setAccessToken(accessToken);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,7 +99,14 @@ public class SettingsActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d("SettingsActivity", "leaving settings activity");
+        saveSettings();
     }
+
+//    @Override
+//    public void onBackPressed() {
+//        finish();
+//        NavUtils.navigateUpFromSameTask(this);
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

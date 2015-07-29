@@ -20,8 +20,8 @@ public class MainApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        particle = new ParticleIO("15a54699126ccf2896e441c91751b7a68650cb6c");
         preferences = getSharedPreferences("garage_door_prefs", Context.MODE_PRIVATE);
+        particle = new ParticleIO(preferences.getString("access_token", null));
     }
 
     @Override
