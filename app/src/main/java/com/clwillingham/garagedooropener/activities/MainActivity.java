@@ -21,7 +21,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends AppCompatActivity {
     Button button;
     LinearLayout lockedLayout;
     SeekBar seekBar;

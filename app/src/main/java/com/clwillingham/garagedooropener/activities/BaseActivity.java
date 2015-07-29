@@ -1,5 +1,6 @@
 package com.clwillingham.garagedooropener.activities;
 
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 
 import com.clwillingham.garagedooropener.MainApplication;
@@ -10,5 +11,9 @@ import com.clwillingham.garagedooropener.MainApplication;
 public class BaseActivity extends AppCompatActivity {
     public MainApplication getApp(){
         return (MainApplication)getApplication();
+    }
+
+    public SharedPreferences getPrefs(){
+        return getApp().preferences;
     }
 }

@@ -63,11 +63,17 @@ public class SettingsActivity extends BaseActivity {
         }
     }
 
+    public void loadSettings(){
+        accessTokenEdTxt.setText(getPrefs().getString("access_token", ""));
+        lockoutTimeoutEdTxt.setText(""+getPrefs().getInt("lockout_timeout", 5));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
+        loadSettings();
         loadQRCode();
     }
 
