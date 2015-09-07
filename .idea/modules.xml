@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/GarageDoorOpener.iml" filepath="$PROJECT_DIR$/GarageDoorOpener.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/garagedooropener.iml" filepath="$PROJECT_DIR$/garagedooropener.iml" />
       <module fileurl="file://$PROJECT_DIR$/particle_api/particle_api.iml" filepath="$PROJECT_DIR$/particle_api/particle_api.iml" />

@@ -22,4 +22,6 @@ public class BaseActivity extends AppCompatActivity {
     public SharedPreferences getPrefs(){
         return getApp().preferences;
     }
+
+
 }

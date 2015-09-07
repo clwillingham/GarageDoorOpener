@@ -1,6 +1,8 @@
 package com.clwillingham.garagedooropener.activities;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -19,13 +21,20 @@ import com.clwillingham.particle_api.models.FunctionResponse;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import retrofit.RetrofitError;
+
 
 public class MainActivity extends BaseActivity {
-    Button button;
-    LinearLayout lockedLayout;
-    SeekBar seekBar;
+    @Bind(R.id.button) Button button;
+    @Bind(R.id.lockedLayout) LinearLayout lockedLayout;
+    @Bind(R.id.seekBar) SeekBar seekBar;
+
     Timer timer = new Timer();
     TimerTask lockdownTask;
+
     void armButton(final boolean isArmed){
         runOnUiThread(new Runnable() {
             @Override
@@ -53,13 +62,8 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final WifiManager wifiManager = (WifiManager) getSystemService (Context.WIFI_SERVICE);
-        button = (Button)findViewById(R.id.button);
-        seekBar = (SeekBar)findViewById(R.id.seekBar);
-        lockedLayout = (LinearLayout)findViewById(R.id.lockedLayout);
-
-
-
+        ButterKnife.bind(this);
+        //sadly Butterknife does not support OnSeekBarChange event
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
@@ -75,7 +79,7 @@ public class MainActivity extends BaseActivity {
                             this.cancel();
                         }
                     };
-                    long timeout = MainActivity.this.getPrefs().getInt("lockout_timeout", 5)*1000;
+                    long timeout = MainActivity.this.getPrefs().getInt("lockout_timeout", 5) * 1000;
                     Log.d("MainActivity", "Timeout is set to " + timeout);
                     timer.schedule(lockdownTask, timeout);
 
@@ -99,30 +103,40 @@ public class MainActivity extends BaseActivity {
 
             }
         });
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //String msg = "garage door_activate\n";
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                button.setEnabled(false);
-                            }
-                        });
-                        FunctionResponse response = getApp().particle.callFunction("53ff68066667574852302067", "activateDoor");
-                        armButton(false);
-                        cancelLockdown();
-                    }
-                }).start();
-
-            }
-        });
         if(!getAPI().hasValidAccessToken()){
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
+        }
+    }
+
+    @OnClick(R.id.button)
+    void btnClicked(){
+        if (getApp().particle.hasValidAccessToken()) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    //String msg = "garage door_activate\n";
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            button.setEnabled(false);
+                        }
+                    });
+                    try {
+                        FunctionResponse response = getApp().particle.callFunction("53ff68066667574852302067", "activateDoor");
+                        //TODO: offer feedback from response
+                    } catch (RetrofitError error) {
+                        //TODO: handle Bad Request error
+                    }
+                    armButton(false);
+                    cancelLockdown();
+                }
+            }).start();
+        } else {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Error")
+                    .setMessage("Unable to open garage door, please add ParticleIO Access Token")
+                    .create().show();
         }
     }
 
