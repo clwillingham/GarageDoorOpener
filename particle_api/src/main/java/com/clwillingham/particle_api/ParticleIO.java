@@ -71,7 +71,7 @@ public class ParticleIO{
     }
 
     public boolean hasValidAccessToken(){
-        return getAccessToken() == null || getAccessToken().length() == 40;
+        return getAccessToken() != null && getAccessToken().length() == 40;
     }
 
     public ArrayList<ParticleDevice> getDevices(){
