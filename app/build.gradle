@@ -1,16 +1,16 @@
 apply plugin: 'com.android.application'
-apply plugin: 'testfairy'
+//apply plugin: 'testfairy'
 
 android {
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
 
-    testfairyConfig {
-        apiKey "$System.env.TESTFAIRY_KEY"
-        metrics "network,logcat"
-        video "off"
-        autoUpdate true
-    }
+//    testfairyConfig {
+//        apiKey "$System.env.TESTFAIRY_KEY"
+//        metrics "network,logcat"
+//        video "off"
+//        autoUpdate true
+//    }
 
     defaultConfig {
         applicationId "com.clwillingham.garagedooropener"
